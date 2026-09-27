@@ -1,0 +1,1 @@
+-- Initial database foundation migration. No business models are defined yet.
