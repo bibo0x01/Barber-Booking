@@ -1,0 +1,3764 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Barber Booking API",
+        "version": "1.0.0",
+        "description": "Contract documentation for implemented Barber Booking API routes. IDs, status codes, validation and response fields reflect the current Express controllers and Zod schemas. The API prefix is supplied by the server at runtime. JSON request bodies are limited to 1 MiB; malformed JSON returns 400 and oversized bodies return 413."
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "Configured API prefix (default: /api/v1)"
+        }
+    ],
+    "tags": [
+        {
+            "name": "System"
+        },
+        {
+            "name": "Authentication"
+        },
+        {
+            "name": "Users"
+        },
+        {
+            "name": "Barbers"
+        },
+        {
+            "name": "Gallery"
+        },
+        {
+            "name": "Services"
+        },
+        {
+            "name": "Working-hours"
+        },
+        {
+            "name": "Location"
+        },
+        {
+            "name": "Favorites"
+        },
+        {
+            "name": "Customer-bookings"
+        },
+        {
+            "name": "Barber-bookings-and-queue"
+        },
+        {
+            "name": "Notifications-and-devices"
+        }
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/Health"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a USER account",
+                "description": "Public. The server assigns role USER. The Zod object schema does not opt into strict unknown-key rejection.",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Register"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/AuthResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/auth/register/barber": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a BARBER account",
+                "description": "Public. The server assigns role BARBER. The Zod object schema does not opt into strict unknown-key rejection.",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Register"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/AuthResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log in",
+                "description": "The Zod object schema does not opt into strict unknown-key rejection.",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Login"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/AuthResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update current user profile",
+                "description": "Any authenticated role. Identity is taken from the token; unknown fields are rejected.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/UserUpdate"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/users/me/password": {
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Change current user password",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/PasswordChange"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NullResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            }
+        },
+        "/barbers": {
+            "get": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Discover active barbers",
+                "description": "Public; Bearer authentication is optional. USER callers can receive isFavorite; anonymous and non-USER callers do not.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {}
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/BarberLimit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Search"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BarberDirectory"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Create current barber profile",
+                "description": "BARBER role. User ownership is derived from the authenticated token.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/BarberCreate"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/BarberResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/barbers/me": {
+            "get": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Get current barber profile",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BarberResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Update current barber profile",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/BarberUpdate"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BarberResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/status": {
+            "get": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Get current barber open status",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BarberStatus"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Update current barber open status",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/BarberStatus"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BarberStatus"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}/profile": {
+            "get": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Get public barber profile",
+                "description": "Public; optional authentication enriches the response with isFavorite for USER callers.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {}
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/PublicBarber"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}": {
+            "get": {
+                "tags": [
+                    "Barbers"
+                ],
+                "summary": "Get public barber details",
+                "description": "Public; optional authentication enriches the response with isFavorite for USER callers. Public selection excludes private user/account fields.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    },
+                    {}
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BarberDetails"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/gallery": {
+            "post": {
+                "tags": [
+                    "Gallery"
+                ],
+                "summary": "Add gallery image",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/GalleryImage"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/GalleryImage"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Gallery"
+                ],
+                "summary": "List current barber gallery",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/GalleryList"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/gallery/reorder": {
+            "patch": {
+                "tags": [
+                    "Gallery"
+                ],
+                "summary": "Reorder current barber gallery",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/GalleryReorder"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/GalleryList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/barbers/me/gallery/{imageId}": {
+            "delete": {
+                "tags": [
+                    "Gallery"
+                ],
+                "summary": "Delete gallery image",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/ImageId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NullResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}/gallery": {
+            "get": {
+                "tags": [
+                    "Gallery"
+                ],
+                "summary": "Get public barber gallery",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/GalleryList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/services": {
+            "post": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Create barber service",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ServiceCreate"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/ServiceResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "List current barber services",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ServiceList"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/services/{serviceId}": {
+            "patch": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Update current barber service",
+                "description": "Updates are scoped to the authenticated barber; foreign service IDs return not found.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/ServiceId"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ServiceUpdate"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ServiceResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Deactivate current barber service",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/ServiceId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NullResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}/services": {
+            "get": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "List public active barber services",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ServiceList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/working-hours": {
+            "post": {
+                "tags": [
+                    "Working-hours"
+                ],
+                "summary": "Create working-hours entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/WorkingHourCreate"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/WorkingHourResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Working-hours"
+                ],
+                "summary": "List current barber working hours",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/WorkingHourList"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/working-hours/{workingHourId}": {
+            "patch": {
+                "tags": [
+                    "Working-hours"
+                ],
+                "summary": "Update working-hours entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/WorkingHourId"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/WorkingHourUpdate"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/WorkingHourResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Working-hours"
+                ],
+                "summary": "Deactivate working-hours entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/WorkingHourId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NullResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}/working-hours": {
+            "get": {
+                "tags": [
+                    "Working-hours"
+                ],
+                "summary": "Get public barber working hours",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/WorkingHourList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/location": {
+            "put": {
+                "tags": [
+                    "Location"
+                ],
+                "summary": "Create or replace current barber location",
+                "description": "The barber is derived from the authenticated identity; request body has no barberId field.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Location"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/LocationResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Location"
+                ],
+                "summary": "Get current barber location",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/LocationResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}/location": {
+            "get": {
+                "tags": [
+                    "Location"
+                ],
+                "summary": "Get public barber location",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/LocationResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/{barberId}/favorite": {
+            "post": {
+                "tags": [
+                    "Favorites"
+                ],
+                "summary": "Favorite a barber",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/FavoriteBarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/FavoriteResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Favorites"
+                ],
+                "summary": "Unfavorite a barber",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/FavoriteBarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/FavoriteResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Favorites"
+                ],
+                "summary": "Get current user's favorite status for a barber",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/FavoriteBarberId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/FavoriteResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/users/me/favorites": {
+            "get": {
+                "tags": [
+                    "Favorites"
+                ],
+                "summary": "List current user's favorite barbers",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/FavoriteLimit"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/FavoriteList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    }
+                }
+            }
+        },
+        "/bookings": {
+            "post": {
+                "tags": [
+                    "Customer-bookings"
+                ],
+                "summary": "Create a booking",
+                "description": "USER only. userId, endAt, status and service snapshot fields are server-controlled and rejected if supplied. Booking requires an active service, barber schedule, future time and non-overlapping slot.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/BookingCreate"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/BookingResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/bookings/me": {
+            "get": {
+                "tags": [
+                    "Customer-bookings"
+                ],
+                "summary": "List current customer bookings",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/BookingLimit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/BookingScope"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BookingList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    }
+                }
+            }
+        },
+        "/bookings/{bookingId}": {
+            "get": {
+                "tags": [
+                    "Customer-bookings"
+                ],
+                "summary": "Get own booking",
+                "description": "A booking owned by another customer is returned as not found.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BookingId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BookingResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/bookings/{bookingId}/queue": {
+            "get": {
+                "tags": [
+                    "Customer-bookings"
+                ],
+                "summary": "Get queue position for own booking",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BookingId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/QueueResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/bookings/{bookingId}/cancel": {
+            "patch": {
+                "tags": [
+                    "Customer-bookings"
+                ],
+                "summary": "Cancel own booking",
+                "description": "Request body must be an empty object. Cancellation is subject to booking start time and queue lifecycle rules.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BookingId"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/EmptyObject"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BookingResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/bookings/{bookingId}/rebook": {
+            "post": {
+                "tags": [
+                    "Customer-bookings"
+                ],
+                "summary": "Rebook from an existing booking",
+                "description": "Creates a new booking using the source booking's barber and service. Only startAt is accepted.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "USER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BookingId"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Rebook"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/BookingResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/barbers/me/bookings": {
+            "get": {
+                "tags": [
+                    "Barber-bookings-and-queue"
+                ],
+                "summary": "List bookings for current barber",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/BookingLimit"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BookingList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/bookings/{bookingId}": {
+            "get": {
+                "tags": [
+                    "Barber-bookings-and-queue"
+                ],
+                "summary": "Get booking for current barber",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BookingId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BookingResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/bookings/{bookingId}/cancel": {
+            "patch": {
+                "tags": [
+                    "Barber-bookings-and-queue"
+                ],
+                "summary": "Cancel booking for current barber",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/BookingId"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/EmptyObject"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BookingResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/barbers/me/queue": {
+            "get": {
+                "tags": [
+                    "Barber-bookings-and-queue"
+                ],
+                "summary": "List current barber queue",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/QueueList"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/barbers/me/queue/{queueId}/start": {
+            "patch": {
+                "tags": [
+                    "Barber-bookings-and-queue"
+                ],
+                "summary": "Start queue entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/QueueId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/QueueResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/barbers/me/queue/{queueId}/complete": {
+            "patch": {
+                "tags": [
+                    "Barber-bookings-and-queue"
+                ],
+                "summary": "Complete queue entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-required-role": "BARBER",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/QueueId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/QueueResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "List current user's notifications",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Page"
+                    },
+                    {
+                        "$ref": "#/components/parameters/NotificationLimit"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NotificationList"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            }
+        },
+        "/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "Get unread notification count",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/CountResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            }
+        },
+        "/notifications/read-all": {
+            "patch": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "Mark all current user's notifications as read",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UpdatedCountResult"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            }
+        },
+        "/notifications/{notificationId}/read": {
+            "patch": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "Mark own notification as read",
+                "description": "Notifications belonging to another user return not found.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/NotificationId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/NotificationResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/notifications/devices": {
+            "get": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "List current user's device tokens",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/DeviceList"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "Register current user's device token",
+                "description": "User ownership is assigned by the server. A token already owned by another user returns 409.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/DeviceToken"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/DeviceTokenResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    }
+                }
+            }
+        },
+        "/notifications/devices/{deviceTokenId}": {
+            "delete": {
+                "tags": [
+                    "Notifications-and-devices"
+                ],
+                "summary": "Delete own device token",
+                "description": "Device tokens belonging to another user return not found.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/DeviceTokenId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/DeviceTokenResult"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ValidationError"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Access token returned by register or login. Send as Authorization: Bearer <token>."
+            }
+        },
+        "parameters": {
+            "Page": {
+                "name": "page",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 1
+                }
+            },
+            "BarberLimit": {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 20
+                }
+            },
+            "BookingLimit": {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 20
+                }
+            },
+            "FavoriteLimit": {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 20
+                }
+            },
+            "NotificationLimit": {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 20
+                }
+            },
+            "Search": {
+                "name": "search",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            },
+            "BookingScope": {
+                "name": "scope",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "upcoming",
+                        "history"
+                    ],
+                    "default": "all"
+                }
+            },
+            "BarberId": {
+                "name": "barberId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "FavoriteBarberId": {
+                "name": "barberId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 191
+                }
+            },
+            "ImageId": {
+                "name": "imageId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "ServiceId": {
+                "name": "serviceId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "WorkingHourId": {
+                "name": "workingHourId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "BookingId": {
+                "name": "bookingId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "pattern": "^c[a-z0-9]{24}$"
+                }
+            },
+            "QueueId": {
+                "name": "queueId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "pattern": "^c[a-z0-9]{24}$"
+                }
+            },
+            "NotificationId": {
+                "name": "notificationId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "DeviceTokenId": {
+                "name": "deviceTokenId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "requestBodies": {
+            "Register": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RegisterRequest"
+                        },
+                        "example": {
+                            "name": "Sample Customer",
+                            "email": "customer@example.test",
+                            "phone": "+15551234567",
+                            "password": "<provide-a-development-password>"
+                        }
+                    }
+                }
+            },
+            "Login": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/LoginRequest"
+                        },
+                        "example": {
+                            "email": "customer@example.test",
+                            "password": "<provide-a-development-password>"
+                        }
+                    }
+                }
+            },
+            "UserUpdate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/UserUpdateRequest"
+                        },
+                        "example": {
+                            "name": "Updated Sample Customer",
+                            "avatarUrl": "https://example.test/avatar.png"
+                        }
+                    }
+                }
+            },
+            "PasswordChange": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/PasswordChangeRequest"
+                        },
+                        "example": {
+                            "currentPassword": "<current-development-password>",
+                            "newPassword": "<new-development-password>"
+                        }
+                    }
+                }
+            },
+            "BarberCreate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BarberCreateRequest"
+                        },
+                        "example": {
+                            "businessName": "Sample Barber Studio",
+                            "bio": "Appointments by booking."
+                        }
+                    }
+                }
+            },
+            "BarberUpdate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BarberUpdateRequest"
+                        },
+                        "example": {
+                            "businessName": "Updated Sample Barber Studio"
+                        }
+                    }
+                }
+            },
+            "BarberStatus": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BarberStatusRequest"
+                        },
+                        "example": {
+                            "isOpen": true
+                        }
+                    }
+                }
+            },
+            "GalleryImage": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GalleryImageRequest"
+                        },
+                        "example": {
+                            "imageUrl": "https://example.test/gallery-image.jpg",
+                            "altText": "Shop interior"
+                        }
+                    }
+                }
+            },
+            "GalleryReorder": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GalleryReorderRequest"
+                        },
+                        "example": {
+                            "imageIds": [
+                                "cm123456789012345678901234"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ServiceCreate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ServiceCreateRequest"
+                        },
+                        "example": {
+                            "name": "Classic haircut",
+                            "description": "Haircut and finish",
+                            "price": 150,
+                            "durationMinutes": 30
+                        }
+                    }
+                }
+            },
+            "ServiceUpdate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ServiceUpdateRequest"
+                        },
+                        "example": {
+                            "price": 160,
+                            "isActive": true
+                        }
+                    }
+                }
+            },
+            "WorkingHourCreate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/WorkingHourCreateRequest"
+                        },
+                        "example": {
+                            "dayOfWeek": 1,
+                            "openTime": "09:00",
+                            "closeTime": "17:00",
+                            "isActive": true
+                        }
+                    }
+                }
+            },
+            "WorkingHourUpdate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/WorkingHourUpdateRequest"
+                        },
+                        "example": {
+                            "closeTime": "18:00",
+                            "isActive": true
+                        }
+                    }
+                }
+            },
+            "Location": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/LocationRequest"
+                        },
+                        "example": {
+                            "latitude": 30.0444,
+                            "longitude": 31.2357,
+                            "address": "Sample district"
+                        }
+                    }
+                }
+            },
+            "BookingCreate": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BookingCreateRequest"
+                        },
+                        "example": {
+                            "barberId": "cm123456789012345678901234",
+                            "serviceId": "cm234567890123456789012345",
+                            "startAt": "2030-05-20T10:00:00+03:00"
+                        }
+                    }
+                }
+            },
+            "Rebook": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RebookRequest"
+                        },
+                        "example": {
+                            "startAt": "2030-05-21T10:00:00+03:00"
+                        }
+                    }
+                }
+            },
+            "EmptyObject": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": false
+                        },
+                        "example": {}
+                    }
+                }
+            },
+            "DeviceToken": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/DeviceTokenRequest"
+                        },
+                        "example": {
+                            "token": "<device-token-from-client>",
+                            "platform": "ANDROID"
+                        }
+                    }
+                }
+            }
+        },
+        "responses": {
+            "Health": {
+                "description": "API is running",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/HealthResponse"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "API is running"
+                        }
+                    }
+                }
+            },
+            "AuthResult": {
+                "description": "Successful registration or login",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/AuthResponse"
+                        },
+                        "example": {
+                            "success": true,
+                            "data": {
+                                "user": {
+                                    "id": "cm123456789012345678901234",
+                                    "name": "Sample Customer",
+                                    "email": "customer@example.test",
+                                    "phone": "+15551234567",
+                                    "role": "USER"
+                                },
+                                "accessToken": "<JWT returned by API>"
+                            }
+                        }
+                    }
+                }
+            },
+            "UserResult": {
+                "description": "Safe authenticated user fields",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/UserResponse"
+                        }
+                    }
+                }
+            },
+            "BarberResult": {
+                "description": "Barber profile",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "BarberStatus": {
+                "description": "Manual barber open status",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BarberStatusResponse"
+                        }
+                    }
+                }
+            },
+            "PublicBarber": {
+                "description": "Public barber profile",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "BarberDirectory": {
+                "description": "Paginated directory; public fields only",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BarberDirectoryResponse"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Barbers retrieved successfully",
+                            "data": {
+                                "items": [
+                                    {
+                                        "id": "cm123456789012345678901234",
+                                        "businessName": "Sample Barber Studio",
+                                        "bio": "Appointments by booking.",
+                                        "isVerified": false,
+                                        "isOpen": true,
+                                        "location": null,
+                                        "primaryImage": null,
+                                        "services": []
+                                    }
+                                ],
+                                "pagination": {
+                                    "page": 1,
+                                    "limit": 20,
+                                    "total": 1,
+                                    "totalPages": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "BarberDetails": {
+                "description": "Public barber details: id, businessName, bio, isVerified, isOpen, location, gallery, active services, workingHours and optional USER-only isFavorite. Public user/account fields are not selected.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Barber details fetched successfully",
+                            "data": {
+                                "id": "cm123456789012345678901234",
+                                "businessName": "Sample Barber Studio",
+                                "bio": "Appointments by booking.",
+                                "isVerified": false,
+                                "isOpen": true,
+                                "location": null,
+                                "gallery": [],
+                                "services": [
+                                    {
+                                        "id": "cm234567890123456789012345",
+                                        "name": "Classic haircut",
+                                        "description": "Haircut and finish",
+                                        "price": 150,
+                                        "durationMinutes": 30
+                                    }
+                                ],
+                                "workingHours": [
+                                    {
+                                        "id": "cm345678901234567890123456",
+                                        "dayOfWeek": 1,
+                                        "openTime": "09:00",
+                                        "closeTime": "17:00",
+                                        "isActive": true
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "GalleryImage": {
+                "description": "Gallery image",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "GalleryList": {
+                "description": "Gallery images",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "ServiceResult": {
+                "description": "Service fields; price is serialized as a number",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "ServiceList": {
+                "description": "Services; public endpoint returns active service fields only",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "WorkingHourResult": {
+                "description": "Working-hours entry",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "WorkingHourList": {
+                "description": "Working-hours entries",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "LocationResult": {
+                "description": "Location coordinates are serialized as numbers",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "FavoriteResult": {
+                "description": "Favorite relationship result",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Barber added to favorites",
+                            "data": {
+                                "barberId": "cm123456789012345678901234",
+                                "isFavorite": true
+                            }
+                        }
+                    }
+                }
+            },
+            "FavoriteList": {
+                "description": "Paginated favorite barber list",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "BookingResult": {
+                "description": "Booking response. Customer views include a barber summary; barber views include a customer summary; shared booking properties include IDs, timestamps, status and nested service snapshot. Queue creation is persisted atomically but is not embedded in the create response.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BookingResponse"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Booking created successfully",
+                            "data": {
+                                "id": "cm123456789012345678901234",
+                                "userId": "cm234567890123456789012345",
+                                "barberId": "cm345678901234567890123456",
+                                "serviceId": "cm456789012345678901234567",
+                                "startAt": "2030-05-20T07:00:00.000Z",
+                                "endAt": "2030-05-20T07:30:00.000Z",
+                                "status": "CONFIRMED",
+                                "createdAt": "2030-05-01T12:00:00.000Z",
+                                "updatedAt": "2030-05-01T12:00:00.000Z",
+                                "service": {
+                                    "name": "Classic haircut",
+                                    "description": "Haircut and finish",
+                                    "price": 150,
+                                    "durationMinutes": 30
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "BookingList": {
+                "description": "Paginated booking list",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BookingListResponse"
+                        }
+                    }
+                }
+            },
+            "QueueResult": {
+                "description": "Queue entry or customer queue position",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/QueueResponse"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Queue retrieved successfully",
+                            "data": {
+                                "queueId": "cm567890123456789012345678",
+                                "bookingId": "cm123456789012345678901234",
+                                "status": "WAITING",
+                                "joinedAt": "2030-05-20T07:00:00.000Z",
+                                "startedAt": null,
+                                "completedAt": null,
+                                "position": 1
+                            }
+                        }
+                    }
+                }
+            },
+            "QueueList": {
+                "description": "Barber queue entries",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BarberQueueResponse"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Queue retrieved successfully",
+                            "data": {
+                                "items": [
+                                    {
+                                        "queueId": "cm567890123456789012345678",
+                                        "bookingId": "cm123456789012345678901234",
+                                        "status": "WAITING",
+                                        "position": 1,
+                                        "joinedAt": "2030-05-20T07:00:00.000Z",
+                                        "startedAt": null,
+                                        "completedAt": null,
+                                        "customer": {
+                                            "id": "cm234567890123456789012345",
+                                            "name": "Sample Customer"
+                                        },
+                                        "service": {
+                                            "id": "cm234567890123456789012345",
+                                            "name": "Classic haircut",
+                                            "durationMinutes": 30,
+                                            "price": 150
+                                        },
+                                        "startAt": "2030-05-20T07:00:00.000Z",
+                                        "endAt": "2030-05-20T07:30:00.000Z"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "NotificationResult": {
+                "description": "Notification object scoped to the authenticated user",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Notification marked as read",
+                            "data": {
+                                "id": "cm678901234567890123456789",
+                                "userId": "cm234567890123456789012345",
+                                "type": "BOOKING_CREATED",
+                                "title": "Booking confirmed",
+                                "message": "Your appointment has been scheduled successfully.",
+                                "metadata": {},
+                                "isRead": true,
+                                "readAt": "2030-05-20T07:01:00.000Z",
+                                "createdAt": "2030-05-20T07:00:00.000Z",
+                                "updatedAt": "2030-05-20T07:01:00.000Z"
+                            }
+                        }
+                    }
+                }
+            },
+            "NotificationList": {
+                "description": "Paginated current-user notifications",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "DeviceTokenResult": {
+                "description": "Device token object scoped to the authenticated user. Token strings are sensitive and are returned only to their owner; do not expose them in client logs.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Device token registered successfully",
+                            "data": {
+                                "id": "cm789012345678901234567890",
+                                "userId": "cm234567890123456789012345",
+                                "token": "<device-token-from-client>",
+                                "platform": "ANDROID",
+                                "isActive": true,
+                                "lastUsedAt": "2030-05-20T07:00:00.000Z",
+                                "createdAt": "2030-05-20T07:00:00.000Z",
+                                "updatedAt": "2030-05-20T07:00:00.000Z"
+                            }
+                        }
+                    }
+                }
+            },
+            "DeviceList": {
+                "description": "Current-user device tokens",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        }
+                    }
+                }
+            },
+            "CountResult": {
+                "description": "Unread count",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Unread notification count retrieved successfully",
+                            "data": {
+                                "count": 0
+                            }
+                        }
+                    }
+                }
+            },
+            "UpdatedCountResult": {
+                "description": "Number updated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/GenericSuccess"
+                        },
+                        "example": {
+                            "success": true,
+                            "message": "Notifications marked as read",
+                            "data": {
+                                "updatedCount": 0
+                            }
+                        }
+                    }
+                }
+            },
+            "NullResult": {
+                "description": "Successful operation with null data",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/NullResponse"
+                        }
+                    }
+                }
+            },
+            "ValidationError": {
+                "description": "Validation failed (Zod issue paths and messages are returned in errors)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        },
+                        "example": {
+                            "success": false,
+                            "message": "Validation failed",
+                            "errors": [
+                                {
+                                    "path": "name",
+                                    "message": "Invalid input"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "Unauthorized": {
+                "description": "Authentication required, invalid/expired JWT, or invalid login credentials",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        },
+                        "example": {
+                            "success": false,
+                            "message": "Authentication required",
+                            "errors": [
+                                "Authentication required"
+                            ]
+                        }
+                    }
+                }
+            },
+            "Forbidden": {
+                "description": "Authenticated role is not permitted for this operation",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        },
+                        "example": {
+                            "success": false,
+                            "message": "Forbidden",
+                            "errors": [
+                                "Forbidden"
+                            ]
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Resource missing or outside the authenticated owner's scope",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "Conflict": {
+                "description": "Duplicate resource or business-rule conflict (exact message is operation/state dependent)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "Error": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "message",
+                    "errors"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "enum": [
+                            false
+                        ]
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Error"
+                    }
+                ]
+            },
+            "Success": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "enum": [
+                            true
+                        ]
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {}
+                }
+            },
+            "GenericSuccess": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Success"
+                    }
+                ]
+            },
+            "NullResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "enum": [
+                            true
+                        ]
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true,
+                        "description": "The controller returns null for this successful operation."
+                    }
+                }
+            },
+            "HealthResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "message"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "enum": [
+                            true
+                        ]
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "API is running"
+                    }
+                }
+            },
+            "User": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "phone",
+                    "role"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "avatarUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "USER",
+                            "BARBER",
+                            "ADMIN"
+                        ]
+                    }
+                },
+                "description": "Safe user projection. passwordHash is never returned."
+            },
+            "AuthResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "enum": [
+                            true
+                        ]
+                    },
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "user",
+                            "accessToken"
+                        ],
+                        "properties": {
+                            "user": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                            "accessToken": {
+                                "type": "string",
+                                "description": "JWT access token"
+                            }
+                        }
+                    }
+                }
+            },
+            "UserResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Success"
+                    }
+                ],
+                "description": "For /auth/me the user omits avatarUrl; profile update includes avatarUrl."
+            },
+            "RegisterRequest": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "email",
+                    "phone",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "pattern": "^\\+?[0-9]{7,15}$"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 72
+                    }
+                }
+            },
+            "LoginRequest": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            },
+            "UserUpdateRequest": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                    },
+                    "phone": {
+                        "type": "string",
+                        "pattern": "^\\+?[0-9]{7,15}$"
+                    },
+                    "avatarUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    }
+                }
+            },
+            "PasswordChangeRequest": {
+                "type": "object",
+                "required": [
+                    "currentPassword",
+                    "newPassword"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "currentPassword": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 72,
+                        "description": "Must differ from currentPassword."
+                    }
+                }
+            },
+            "BarberCreateRequest": {
+                "type": "object",
+                "required": [
+                    "businessName"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "businessName": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                    },
+                    "bio": {
+                        "type": "string",
+                        "maxLength": 500
+                    }
+                }
+            },
+            "BarberUpdateRequest": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                    "businessName": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                    },
+                    "bio": {
+                        "type": "string",
+                        "maxLength": 500
+                    }
+                }
+            },
+            "BarberStatusRequest": {
+                "type": "object",
+                "required": [
+                    "isOpen"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "isOpen": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "GalleryImageRequest": {
+                "type": "object",
+                "required": [
+                    "imageUrl"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "imageUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "altText": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "GalleryReorderRequest": {
+                "type": "object",
+                "required": [
+                    "imageIds"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "imageIds": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    }
+                }
+            },
+            "ServiceCreateRequest": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "price",
+                    "durationMinutes"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 500
+                    },
+                    "price": {
+                        "oneOf": [
+                            {
+                                "type": "number",
+                                "minimum": 0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^\\d+(\\.\\d{1,2})?$"
+                            }
+                        ]
+                    },
+                    "durationMinutes": {
+                        "type": "integer",
+                        "minimum": 5,
+                        "maximum": 480
+                    }
+                }
+            },
+            "ServiceUpdateRequest": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 500
+                    },
+                    "price": {
+                        "oneOf": [
+                            {
+                                "type": "number",
+                                "minimum": 0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^\\d+(\\.\\d{1,2})?$"
+                            }
+                        ]
+                    },
+                    "durationMinutes": {
+                        "type": "integer",
+                        "minimum": 5,
+                        "maximum": 480
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "WorkingHourCreateRequest": {
+                "type": "object",
+                "required": [
+                    "dayOfWeek",
+                    "openTime",
+                    "closeTime"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "dayOfWeek": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6,
+                        "description": "Sunday 0 through Saturday 6."
+                    },
+                    "openTime": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "closeTime": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                        "description": "Must be later than openTime on the same day."
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "WorkingHourUpdateRequest": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                    "dayOfWeek": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                    },
+                    "openTime": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "closeTime": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "LocationRequest": {
+                "type": "object",
+                "required": [
+                    "latitude",
+                    "longitude"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "latitude": {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                    },
+                    "address": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "nullable": true
+                    }
+                }
+            },
+            "BookingCreateRequest": {
+                "type": "object",
+                "required": [
+                    "barberId",
+                    "serviceId",
+                    "startAt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "barberId": {
+                        "type": "string",
+                        "pattern": "^c[a-z0-9]{24}$"
+                    },
+                    "serviceId": {
+                        "type": "string",
+                        "pattern": "^c[a-z0-9]{24}$"
+                    },
+                    "startAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "ISO 8601 timestamp including timezone offset."
+                    }
+                }
+            },
+            "RebookRequest": {
+                "type": "object",
+                "required": [
+                    "startAt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "startAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "DeviceTokenRequest": {
+                "type": "object",
+                "required": [
+                    "token"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "platform": {
+                        "type": "string",
+                        "enum": [
+                            "ANDROID",
+                            "IOS",
+                            "WEB"
+                        ],
+                        "default": "WEB"
+                    }
+                }
+            },
+            "BookingServiceSnapshot": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "description",
+                    "price",
+                    "durationMinutes"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "number"
+                    },
+                    "durationMinutes": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "BookingRecord": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "barberId",
+                    "serviceId",
+                    "startAt",
+                    "endAt",
+                    "status",
+                    "createdAt",
+                    "updatedAt",
+                    "service"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "description": "Included in create/cancel responses and BARBER views; omitted in customer booking reads."
+                    },
+                    "barberId": {
+                        "type": "string"
+                    },
+                    "serviceId": {
+                        "type": "string"
+                    },
+                    "startAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "endAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "CONFIRMED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "service": {
+                        "$ref": "#/components/schemas/BookingServiceSnapshot"
+                    },
+                    "barber": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "businessName": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Included in customer get/list responses."
+                    },
+                    "customer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "avatarUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "nullable": true
+                            }
+                        },
+                        "description": "Included in barber single-booking responses."
+                    },
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "avatarUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "nullable": true
+                            }
+                        },
+                        "description": "Included in barber booking list responses."
+                    }
+                }
+            },
+            "BookingResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Success"
+                    }
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/BookingRecord"
+                    }
+                }
+            },
+            "BookingListResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Success"
+                    }
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "items",
+                            "pagination"
+                        ],
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/BookingRecord"
+                                }
+                            },
+                            "pagination": {
+                                "$ref": "#/components/schemas/Pagination"
+                            }
+                        }
+                    }
+                }
+            },
+            "QueueRecord": {
+                "type": "object",
+                "required": [
+                    "queueId",
+                    "bookingId",
+                    "status",
+                    "joinedAt",
+                    "startedAt",
+                    "completedAt"
+                ],
+                "properties": {
+                    "queueId": {
+                        "type": "string"
+                    },
+                    "bookingId": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "WAITING",
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "position": {
+                        "type": "integer",
+                        "description": "Position among active entries, ordered IN_PROGRESS then WAITING; cancelled/completed entries may not have an active position."
+                    },
+                    "joinedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "startedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "completedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "customer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Included in barber queue list only."
+                    },
+                    "service": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "durationMinutes": {
+                                "type": "integer"
+                            },
+                            "price": {
+                                "type": "number"
+                            }
+                        },
+                        "description": "Included in barber queue list only."
+                    },
+                    "startAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Included in barber queue list only."
+                    },
+                    "endAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Included in barber queue list only."
+                    }
+                }
+            },
+            "QueueResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Success"
+                    }
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/QueueRecord"
+                    }
+                }
+            },
+            "BarberQueueResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Success"
+                    }
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "items"
+                        ],
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/QueueRecord"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Pagination": {
+                "type": "object",
+                "required": [
+                    "page",
+                    "limit",
+                    "total",
+                    "totalPages"
+                ],
+                "properties": {
+                    "page": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "totalPages": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "BarberStatusResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "enum": [
+                            true
+                        ]
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "isOpen"
+                        ],
+                        "properties": {
+                            "isOpen": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                }
+            },
+            "BarberDirectoryResponse": {
+                "type": "object",
+                "required": [
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "businessName": {
+                                            "type": "string"
+                                        },
+                                        "bio": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "isVerified": {
+                                            "type": "boolean"
+                                        },
+                                        "isOpen": {
+                                            "type": "boolean"
+                                        },
+                                        "location": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "primaryImage": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "services": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "isFavorite": {
+                                            "type": "boolean",
+                                            "description": "Included only for authenticated USER requests."
+                                        }
+                                    }
+                                }
+                            },
+                            "pagination": {
+                                "type": "object",
+                                "properties": {
+                                    "page": {
+                                        "type": "integer"
+                                    },
+                                    "limit": {
+                                        "type": "integer"
+                                    },
+                                    "total": {
+                                        "type": "integer"
+                                    },
+                                    "totalPages": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

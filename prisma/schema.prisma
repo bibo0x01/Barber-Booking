@@ -13,17 +13,46 @@ enum Role {
     ADMIN
 }
 
+enum BookingStatus {
+    CONFIRMED
+    CANCELLED
+}
+
+enum QueueStatus {
+    WAITING
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+enum NotificationType {
+    BOOKING_CREATED
+    BOOKING_STARTED
+    BOOKING_COMPLETED
+    BOOKING_CANCELLED
+}
+
+enum DevicePlatform {
+    ANDROID
+    IOS
+    WEB
+}
+
 model User {
-    id           String   @id @default(cuid())
-    name         String
-    email        String   @unique
-    phone        String   @unique
-    passwordHash String
-    avatarUrl    String?
-    role         Role     @default(USER)
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
-    barber       Barber?
+    id            String         @id @default(cuid())
+    name          String
+    email         String         @unique
+    phone         String         @unique
+    passwordHash  String
+    avatarUrl     String?
+    role          Role           @default(USER)
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    barber        Barber?
+    bookings      Booking[]
+    notifications Notification[]
+    deviceTokens  DeviceToken[]
+    favorites     Favorite[]
 }
 
 model Barber {
@@ -33,11 +62,167 @@ model Barber {
     bio          String?
     isVerified   Boolean  @default(false)
     isActive     Boolean  @default(true)
+    isOpen       Boolean  @default(false)
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    services     BarberService[]
+    workingHours BarberWorkingHour[]
+    location     BarberLocation?
+    gallery      BarberImage[]
+    bookings     Booking[]
+    favorites    Favorite[]
 
     @@index([isActive])
     @@index([isVerified])
+}
+
+model Favorite {
+    id        String   @id @default(cuid())
+    userId    String
+    barberId  String
+    createdAt DateTime @default(now())
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, barberId])
+    @@index([userId, createdAt])
+    @@index([barberId, createdAt])
+}
+
+model BarberService {
+    id              String   @id @default(cuid())
+    barberId        String
+    name            String
+    description     String?
+    price           Decimal  @db.Decimal(10, 2)
+    durationMinutes Int
+    isActive        Boolean  @default(true)
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    barber   Barber    @relation(fields: [barberId], references: [id], onDelete: Cascade)
+    bookings Booking[]
+
+    @@index([barberId, isActive])
+    @@index([barberId, createdAt])
+}
+
+model BarberWorkingHour {
+    id        String   @id @default(cuid())
+    barberId  String
+    dayOfWeek Int
+    openTime  String
+    closeTime String
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+    @@unique([barberId, dayOfWeek])
+    @@index([barberId, isActive])
+}
+
+model BarberLocation {
+    id        String   @id @default(cuid())
+    barberId  String   @unique
+    latitude  Decimal  @db.Decimal(9, 6)
+    longitude Decimal  @db.Decimal(9, 6)
+    address   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+}
+
+model BarberImage {
+    id        String   @id @default(cuid())
+    barberId  String
+    imageUrl  String
+    altText   String?
+    sortOrder Int      @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+    @@index([barberId, sortOrder])
+}
+
+model Booking {
+    id                 String        @id @default(cuid())
+    userId             String
+    barberId           String
+    serviceId          String
+    startAt            DateTime
+    endAt              DateTime
+    status             BookingStatus @default(CONFIRMED)
+    serviceName        String
+    serviceDescription String?
+    servicePrice       Decimal       @db.Decimal(10, 2)
+    serviceDurationMin Int
+    createdAt          DateTime      @default(now())
+    updatedAt          DateTime      @updatedAt
+
+    user       User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+    barber     Barber        @relation(fields: [barberId], references: [id], onDelete: Restrict)
+    service    BarberService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+    queueEntry QueueEntry?
+
+    @@index([userId, startAt])
+    @@index([barberId, startAt])
+    @@index([barberId, status, startAt])
+    @@index([serviceId])
+}
+
+model QueueEntry {
+    id          String      @id @default(cuid())
+    bookingId   String      @unique
+    status      QueueStatus @default(WAITING)
+    joinedAt    DateTime    @default(now())
+    startedAt   DateTime?
+    completedAt DateTime?
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+
+    booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+    @@index([status, joinedAt])
+}
+
+model Notification {
+    id        String           @id @default(cuid())
+    userId    String
+    type      NotificationType
+    title     String
+    message   String
+    metadata  Json?
+    isRead    Boolean          @default(false)
+    readAt    DateTime?
+    createdAt DateTime         @default(now())
+    updatedAt DateTime         @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, isRead, createdAt])
+    @@index([userId, createdAt])
+}
+
+model DeviceToken {
+    id         String         @id @default(cuid())
+    userId     String
+    token      String         @unique
+    platform   DevicePlatform @default(WEB)
+    isActive   Boolean        @default(true)
+    lastUsedAt DateTime?
+    createdAt  DateTime       @default(now())
+    updatedAt  DateTime       @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, isActive])
+    @@index([isActive, updatedAt])
 }

@@ -1,0 +1,1325 @@
+{
+    "info": {
+        "_postman_id": "34a675be-b809-49d1-8f54-10f25ac9c252",
+        "name": "Barber Booking API",
+        "description": "Requests mirror the implemented API. Set baseUrl to the API prefix, then run USER and BARBER registration/login requests to populate role tokens. Create a barber profile, services and working hours before attempting booking; a booking also needs a future startAt within configured opening hours. Use IDs from responses in collection variables. This collection calls only the HTTP API and never accesses a database directly. Password variables are blank placeholders only; use disposable development accounts and do not export populated environments.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "event": [
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "pm.test('Successful API response', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                    "pm.test('Success envelope', function () { pm.expect(pm.response.json()).to.have.property('success', true); });"
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "userEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "userPassword",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "userToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "barberEmail",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "barberPassword",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "barberToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "barberId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "serviceId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "workingHourId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "bookingId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "queueId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "imageId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "notificationId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "deviceTokenId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "System",
+            "item": [
+                {
+                    "name": "Health",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/health"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Authentication and users",
+            "item": [
+                {
+                    "name": "Register USER",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.accessToken) pm.collectionVariables.set('userToken', body.data.accessToken); if (body.data?.user?.id) pm.collectionVariables.set('userId', body.data.user.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"{{userName}}\",\n  \"email\": \"{{userEmail}}\",\n  \"phone\": \"{{userPhone}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/register"
+                    }
+                },
+                {
+                    "name": "Register BARBER",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.accessToken) pm.collectionVariables.set('barberToken', body.data.accessToken); if (body.data?.user?.id) pm.collectionVariables.set('barberUserId', body.data.user.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"{{barberName}}\",\n  \"email\": \"{{barberEmail}}\",\n  \"phone\": \"{{barberPhone}}\",\n  \"password\": \"{{barberPassword}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/register/barber"
+                    }
+                },
+                {
+                    "name": "Login USER",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.accessToken) pm.collectionVariables.set('userToken', body.data.accessToken);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/login"
+                    }
+                },
+                {
+                    "name": "Login BARBER",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.accessToken) pm.collectionVariables.set('barberToken', body.data.accessToken);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"{{barberEmail}}\",\n  \"password\": \"{{barberPassword}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/login"
+                    }
+                },
+                {
+                    "name": "Get authenticated user",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/auth/me"
+                    }
+                },
+                {
+                    "name": "Update own profile",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"{{updatedUserName}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/users/me"
+                    }
+                },
+                {
+                    "name": "Change own password",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"{{userPassword}}\",\n  \"newPassword\": \"{{newUserPassword}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/users/me/password"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Public barber discovery",
+            "item": [
+                {
+                    "name": "List barbers",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers?page=1&limit=20"
+                    }
+                },
+                {
+                    "name": "Search barbers",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers?search={{searchTerm}}&page=1&limit=20"
+                    }
+                },
+                {
+                    "name": "Get public barber details",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers/{{barberId}}"
+                    }
+                },
+                {
+                    "name": "Get public barber profile (optional USER auth)",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/profile"
+                    }
+                },
+                {
+                    "name": "Get public gallery",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/gallery"
+                    }
+                },
+                {
+                    "name": "Get public services",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/services"
+                    }
+                },
+                {
+                    "name": "Get public working hours",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/working-hours"
+                    }
+                },
+                {
+                    "name": "Get public location",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/location"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Barber management (BARBER token)",
+            "item": [
+                {
+                    "name": "Create barber profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.id) pm.collectionVariables.set('barberId', body.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"businessName\": \"{{businessName}}\",\n  \"bio\": \"Appointments by booking.\"\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers"
+                    }
+                },
+                {
+                    "name": "Get own barber profile",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me"
+                    }
+                },
+                {
+                    "name": "Update own barber profile",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"businessName\": \"{{businessName}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me"
+                    }
+                },
+                {
+                    "name": "Get own open status",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/status"
+                    }
+                },
+                {
+                    "name": "Update own open status",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"isOpen\": true\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/status"
+                    }
+                },
+                {
+                    "name": "Add gallery image",
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"imageUrl\": \"https://example.test/gallery.jpg\",\n  \"altText\": \"Sample gallery image\"\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/gallery"
+                    }
+                },
+                {
+                    "name": "List own gallery",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/gallery"
+                    }
+                },
+                {
+                    "name": "Reorder gallery",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"imageIds\": [\"{{imageId}}\"]\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/gallery/reorder"
+                    }
+                },
+                {
+                    "name": "Delete gallery image",
+                    "request": {
+                        "method": "DELETE",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/gallery/{{imageId}}"
+                    }
+                },
+                {
+                    "name": "Create service",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.id) pm.collectionVariables.set('serviceId', body.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Classic haircut\",\n  \"description\": \"Haircut and finish\",\n  \"price\": 150,\n  \"durationMinutes\": 30\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/services"
+                    }
+                },
+                {
+                    "name": "List own services",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/services"
+                    }
+                },
+                {
+                    "name": "Update service",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"price\": 160\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/services/{{serviceId}}"
+                    }
+                },
+                {
+                    "name": "Deactivate service",
+                    "request": {
+                        "method": "DELETE",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/services/{{serviceId}}"
+                    }
+                },
+                {
+                    "name": "Create working-hours entry",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.id) pm.collectionVariables.set('workingHourId', body.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"dayOfWeek\": 1,\n  \"openTime\": \"09:00\",\n  \"closeTime\": \"17:00\",\n  \"isActive\": true\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/working-hours"
+                    }
+                },
+                {
+                    "name": "List own working hours",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/working-hours"
+                    }
+                },
+                {
+                    "name": "Update working-hours entry",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"isActive\": false\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/working-hours/{{workingHourId}}"
+                    }
+                },
+                {
+                    "name": "Deactivate working-hours entry",
+                    "request": {
+                        "method": "DELETE",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/working-hours/{{workingHourId}}"
+                    }
+                },
+                {
+                    "name": "Create or replace location",
+                    "request": {
+                        "method": "PUT",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"latitude\": 30.0444,\n  \"longitude\": 31.2357,\n  \"address\": \"Sample district\"\n}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/location"
+                    }
+                },
+                {
+                    "name": "Get own location",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/location"
+                    }
+                },
+                {
+                    "name": "List barber bookings",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/bookings?page=1&limit=20"
+                    }
+                },
+                {
+                    "name": "Get barber booking",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/bookings/{{bookingId}}"
+                    }
+                },
+                {
+                    "name": "Cancel barber booking",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        },
+                        "url": "{{baseUrl}}/barbers/me/bookings/{{bookingId}}/cancel"
+                    }
+                },
+                {
+                    "name": "Get barber queue",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); const first = body.data?.items?.[0]; if (first?.queueId) pm.collectionVariables.set('queueId', first.queueId);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/queue"
+                    }
+                },
+                {
+                    "name": "Start queue entry",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/queue/{{queueId}}/start"
+                    }
+                },
+                {
+                    "name": "Complete queue entry",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{barberToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/me/queue/{{queueId}}/complete"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Favorites (USER token)",
+            "item": [
+                {
+                    "name": "Favorite barber",
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/favorite"
+                    }
+                },
+                {
+                    "name": "Get barber favorite status",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/favorite"
+                    }
+                },
+                {
+                    "name": "Unfavorite barber",
+                    "request": {
+                        "method": "DELETE",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/barbers/{{barberId}}/favorite"
+                    }
+                },
+                {
+                    "name": "List own favorites",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/users/me/favorites?page=1&limit=20"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Customer bookings (USER token)",
+            "item": [
+                {
+                    "name": "Create booking",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.id) pm.collectionVariables.set('bookingId', body.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"barberId\": \"{{barberId}}\",\n  \"serviceId\": \"{{serviceId}}\",\n  \"startAt\": \"{{bookingStartAt}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/bookings"
+                    }
+                },
+                {
+                    "name": "List own bookings",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/bookings/me?page=1&limit=20&scope=all"
+                    }
+                },
+                {
+                    "name": "Get own booking",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/bookings/{{bookingId}}"
+                    }
+                },
+                {
+                    "name": "Get own booking queue position",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/bookings/{{bookingId}}/queue"
+                    }
+                },
+                {
+                    "name": "Rebook existing booking",
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"startAt\": \"{{rebookStartAt}}\"\n}"
+                        },
+                        "url": "{{baseUrl}}/bookings/{{bookingId}}/rebook"
+                    }
+                },
+                {
+                    "name": "Cancel own booking",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        },
+                        "url": "{{baseUrl}}/bookings/{{bookingId}}/cancel"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Notifications and device tokens (authenticated token)",
+            "item": [
+                {
+                    "name": "List notifications",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/notifications?page=1&limit=20"
+                    }
+                },
+                {
+                    "name": "Get unread count",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/notifications/unread-count"
+                    }
+                },
+                {
+                    "name": "Mark notification as read",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/notifications/{{notificationId}}/read"
+                    }
+                },
+                {
+                    "name": "Mark all notifications as read",
+                    "request": {
+                        "method": "PATCH",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/notifications/read-all"
+                    }
+                },
+                {
+                    "name": "List device tokens",
+                    "request": {
+                        "method": "GET",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/notifications/devices"
+                    }
+                },
+                {
+                    "name": "Register device token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json(); if (body.data?.id) pm.collectionVariables.set('deviceTokenId', body.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"{{deviceToken}}\",\n  \"platform\": \"ANDROID\"\n}"
+                        },
+                        "url": "{{baseUrl}}/notifications/devices"
+                    }
+                },
+                {
+                    "name": "Delete device token",
+                    "request": {
+                        "method": "DELETE",
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/notifications/devices/{{deviceTokenId}}"
+                    }
+                }
+            ]
+        }
+    ]
+}

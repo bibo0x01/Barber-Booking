@@ -1,21 +1,33 @@
+import { createServer } from 'node:http';
 import { app } from './app';
 import { prisma } from './config/database';
 import { env } from './config/env';
+import { createQueueSocketServer } from './config/socket';
 
 const startServer = async (): Promise<void> => {
     await prisma.$connect();
 
-    const server = app.listen(env.port, () => {
+    const httpServer = createServer(app);
+    const queueSocketServer = createQueueSocketServer(httpServer);
+
+    httpServer.listen(env.port, () => {
         console.log(`API listening on port ${env.port}`);
     });
 
+    let shuttingDown = false;
     const shutdown = async (signal: string): Promise<void> => {
+        if (shuttingDown) {
+            return;
+        }
+        shuttingDown = true;
         console.log(`${signal} received. Shutting down gracefully...`);
 
-        server.close(async () => {
+        try {
+            await new Promise<void>((resolve) => queueSocketServer.close(() => resolve()));
+        } finally {
             await prisma.$disconnect();
             process.exit(0);
-        });
+        }
     };
 
     process.on('SIGINT', () => void shutdown('SIGINT'));

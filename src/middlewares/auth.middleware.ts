@@ -1,4 +1,4 @@
-import { RequestHandler } from 'express';
+import { Request, RequestHandler } from 'express';
 import { Role } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { env } from '../config/env';
@@ -16,7 +16,7 @@ const isAccessTokenPayload = (payload: string | JwtPayload): payload is AccessTo
     typeof payload.role === 'string' &&
     Object.values(Role).includes(payload.role as Role);
 
-export const authenticate: RequestHandler = async (request, _response, next) => {
+const authenticateToken = async (request: Request, next: (error?: Error) => void): Promise<void> => {
     const authorization = request.header('authorization');
     const parts = authorization?.trim().split(/\s+/) ?? [];
     const [scheme, token] = parts;
@@ -39,4 +39,19 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
     } catch (error: unknown) {
         next(error instanceof ApiError ? error : new ApiError(401, 'Invalid or expired token'));
     }
+};
+
+export const authenticate: RequestHandler = async (request, _response, next) => {
+    await authenticateToken(request, next);
+};
+
+export const authenticateOptional: RequestHandler = async (request, _response, next) => {
+    const authorization = request.header('authorization');
+
+    if (!authorization) {
+        next();
+        return;
+    }
+
+    await authenticateToken(request, next);
 };

@@ -8,10 +8,3 @@ export type BarberProfile = {
     createdAt: Date;
     updatedAt: Date;
 };
-
-export type PublicBarberProfile = {
-    id: string;
-    businessName: string;
-    bio: string | null;
-    isVerified: boolean;
-};
